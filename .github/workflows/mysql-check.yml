@@ -1,3 +1,5 @@
+name: MySQL lab check
+on: [push, workflow_dispatch]
 jobs:
   database:
     runs-on: ubuntu-latest
