@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 -- Вигадані тестові записи. Виконувати один раз після 01_schema.sql.
 USE `restaurant_db`;
 START TRANSACTION;
