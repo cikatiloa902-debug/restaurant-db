@@ -39,7 +39,6 @@ SELECT * FROM `order_item` LIMIT 5;
 docker compose exec mysql sh -c 'mysqldump --default-character-set=utf8mb4 --no-tablespaces -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db > /tmp/restaurant_db_dump.sql'
 docker compose cp mysql:/tmp/restaurant_db_dump.sql ./restaurant_db_dump.sql
 ```
-Додати справжній отриманий дамп до GitHub і до матеріалів ЛР2.
 
 ## Перевірка через GitHub Actions
 
