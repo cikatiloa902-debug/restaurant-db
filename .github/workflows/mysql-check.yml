@@ -1,20 +1,46 @@
 name: MySQL lab check
+
 on: [push, workflow_dispatch]
+
 jobs:
   database:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Start MySQL 8.4
         run: |
           cp .env.example .env
-          docker compose up -d --wait
+          docker compose up -d
+
+      - name: Wait for MySQL
+        run: |
+          for attempt in $(seq 1 60); do
+            if docker compose exec -T mysql sh -c \
+              'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db -e "SELECT 1;"' \
+              >/dev/null 2>&1; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            echo "Waiting for MySQL: $attempt/60"
+            sleep 2
+          done
+          docker compose logs mysql
+          exit 1
+
       - name: Run queries and export database
         run: |
           mkdir -p results
-          docker compose exec -T mysql sh -c 'exec mysql --default-character-set=utf8mb4 -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db' < 03_queries.sql > results/query-results.txt
-          docker compose exec -T mysql sh -c 'exec mysqldump --default-character-set=utf8mb4 --no-tablespaces -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db' > results/restaurant_db_dump.sql
+          docker compose exec -T mysql sh -c 'exec mysql --protocol=TCP -h127.0.0.1 --default-character-set=utf8mb4 -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db' < 03_queries.sql > results/query-results.txt
+          docker compose exec -T mysql sh -c 'exec mysqldump --protocol=TCP -h127.0.0.1 --default-character-set=utf8mb4 --no-tablespaces -uroot -p"$MYSQL_ROOT_PASSWORD" restaurant_db' > results/restaurant_db_dump.sql
+
       - uses: actions/upload-artifact@v4
         with:
           name: restaurant-db-results
           path: results/
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs mysql
