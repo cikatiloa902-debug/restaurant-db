@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'sql/**'
+      - 'lr3/**'
       - '.github/workflows/lr3-check.yml'
 permissions:
   contents: read
@@ -24,15 +24,15 @@ jobs:
         env:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         run: |
-          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -plab3_demo_root < sql/01_schema.sql
-          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -plab3_demo_root < sql/02_data.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -plab3_demo_root < lr3/sql/01_schema.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -plab3_demo_root < lr3/sql/02_data.sql
       - name: Execute queries and integrity checks
         env:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         run: |
           mkdir -p results-lr3
-          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -t -vvv -uroot -plab3_demo_root < sql/03_queries.sql > results-lr3/query-results.txt
-          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -t -vvv -uroot -plab3_demo_root < sql/04_integrity.sql > results-lr3/integrity-results.txt
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -t -vvv -uroot -plab3_demo_root < lr3/sql/03_queries.sql > results-lr3/query-results.txt
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -t -vvv -uroot -plab3_demo_root < lr3/sql/04_integrity.sql > results-lr3/integrity-results.txt
           docker exec "$MYSQL_CONTAINER" mysqldump --default-character-set=utf8mb4 -uroot -plab3_demo_root restaurant_db_lr3 > results-lr3/restaurant_db_lr3_dump.sql
       - uses: actions/upload-artifact@v4
         with:
