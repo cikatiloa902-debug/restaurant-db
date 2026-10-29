@@ -1,0 +1,12 @@
+chef_specialty.chef_id -> chef.chef_id: 0 orphan rows
+chef_specialty.food_id -> food.food_id: 0 orphan rows
+chef_specialty.drink_id -> drink.drink_id: 0 orphan rows
+notification.order_id -> order.order_id: 0 orphan rows
+order.user_id -> user.user_id: 0 orphan rows
+order_item.order_id -> order.order_id: 0 orphan rows
+order_item.food_id -> food.food_id: 0 orphan rows
+order_item.drink_id -> drink.drink_id: 0 orphan rows
+order_item.reservation_id -> reservation.reservation_id: 0 orphan rows
+order_item.chef_id -> chef.chef_id: 0 orphan rows
+reservation.user_id -> user.user_id: 0 orphan rows
+transaction.order_id -> order.order_id: 0 orphan rows

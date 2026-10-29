@@ -1,0 +1,26 @@
+Q07. Суми замовлень від 300 грн
+
+SELECT oi.order_id, SUM(COALESCE(f.price, d.price)) AS menu_total
+FROM order_item oi
+LEFT JOIN food f ON f.food_id = oi.food_id
+LEFT JOIN drink d ON d.drink_id = oi.drink_id
+GROUP BY oi.order_id
+HAVING SUM(COALESCE(f.price, d.price)) >= 300
+ORDER BY menu_total DESC, oi.order_id;
+
++----------+------------+
+| order_id | menu_total |
++----------+------------+
+|       10 |     595.00 |
+|       20 |     595.00 |
+|        9 |     530.00 |
+|       19 |     530.00 |
+|       11 |     485.00 |
+|       12 |     455.00 |
+|        8 |     390.00 |
+|       18 |     390.00 |
+|        7 |     370.00 |
+|       17 |     370.00 |
+|        6 |     330.00 |
+|       16 |     330.00 |
++----------+------------+

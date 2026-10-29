@@ -1,0 +1,22 @@
+Q08. Кількість позицій за кухарями
+
+SELECT c.chef_id, c.name, COUNT(oi.order_item_id) AS item_count
+FROM chef c
+LEFT JOIN order_item oi ON oi.chef_id = c.chef_id
+GROUP BY c.chef_id, c.name
+ORDER BY item_count DESC, c.chef_id;
+
++---------+------------------+------------+
+| chef_id | name             | item_count |
++---------+------------------+------------+
+|       1 | Олег             |          7 |
+|       2 | Наталія          |          7 |
+|       3 | Іван             |          6 |
+|       4 | Оксана           |          6 |
+|       5 | Петро            |          6 |
+|       6 | Ольга            |          6 |
+|       7 | Тарас            |          6 |
+|       8 | Ганна            |          5 |
+|       9 | Роман            |          4 |
+|      10 | Вікторія         |          3 |
++---------+------------------+------------+

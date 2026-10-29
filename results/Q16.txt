@@ -1,0 +1,21 @@
+Q16. Замовлення без оплати
+
+SELECT o.order_id, o.order_status
+FROM `order` o
+WHERE NOT EXISTS (
+    SELECT 1 FROM `transaction` t WHERE t.order_id = o.order_id
+)
+ORDER BY o.order_id;
+
++----------+--------------+
+| order_id | order_status |
++----------+--------------+
+|        3 | new          |
+|       14 | preparing    |
+|       15 | ready        |
+|       16 | new          |
+|       17 | cancelled    |
+|       18 | preparing    |
+|       19 | ready        |
+|       20 | new          |
++----------+--------------+

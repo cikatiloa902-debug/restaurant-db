@@ -1,0 +1,14 @@
+Невідома зовнішня ссылка — відхилено MySQL
+ERROR 1452 (23000) at line 2: Cannot add or update a child row: a foreign key constraint fails (`restaurant_db_lr3`.`order`, CONSTRAINT `order_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`))
+
+Від’ємна ціна — відхилено MySQL
+ERROR 3819 (HY000) at line 2: Check constraint 'food_chk_1' is violated.
+
+Повторна адреса email — відхилено MySQL
+ERROR 1062 (23000) at line 2: Duplicate entry 'olena@example.test' for key 'user.email'
+
+Два продукти у позиції — відхилено MySQL
+ERROR 3819 (HY000) at line 2: Check constraint 'order_item_chk_1' is violated.
+
+Повторна оплата — відхилено MySQL
+ERROR 1062 (23000) at line 2: Duplicate entry '1' for key 'transaction.order_id'
