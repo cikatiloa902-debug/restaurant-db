@@ -1,0 +1,62 @@
+[
+  [
+    "Усі страви меню",
+    "Виведення усіх полів таблиці страв у порядку первинного ключа.",
+    "SELECT * FROM food ORDER BY food_id;"
+  ],
+  [
+    "Назви та ціни напоїв",
+    "Вибір тільки потрібних стовпців.",
+    "SELECT name, price FROM drink ORDER BY drink_id;"
+  ],
+  [
+    "Страви дорожчі за 120 грн",
+    "Фільтрування рядків за ціною.",
+    "SELECT food_id, name, price\nFROM food\nWHERE price > 120\nORDER BY price, food_id;"
+  ],
+  [
+    "Страви ціною від 90 до 180 грн",
+    "Комбінована умова та сортування за спаданням ціни.",
+    "SELECT food_id, name, price\nFROM food\nWHERE price >= 90 AND price <= 180\nORDER BY price DESC, food_id;"
+  ],
+  [
+    "Три найдорожчі страви",
+    "Обмеження кількості результатів; food_id усуває неоднозначність для однакових цін.",
+    "SELECT food_id, name, price\nFROM food\nORDER BY price DESC, food_id\nLIMIT 3;"
+  ],
+  [
+    "Замовлення та їх клієнти",
+    "JOIN по зовнішньому ключу order.user_id.",
+    "SELECT o.order_id, u.first_name, u.last_name, o.order_status\nFROM `order` AS o\nJOIN `user` AS u ON u.user_id = o.user_id\nORDER BY o.order_id;"
+  ],
+  [
+    "Замовлення із сумою меню понад 200 грн",
+    "LEFT JOIN враховує страви та напої; HAVING відбирає згруповані підсумки.",
+    "SELECT oi.order_id, SUM(COALESCE(f.price, d.price)) AS menu_total\nFROM order_item AS oi\nLEFT JOIN food AS f ON f.food_id = oi.food_id\nLEFT JOIN drink AS d ON d.drink_id = oi.drink_id\nGROUP BY oi.order_id\nHAVING SUM(COALESCE(f.price, d.price)) > 200\nORDER BY menu_total DESC, oi.order_id;"
+  ],
+  [
+    "Клієнти з оплаченими замовленнями",
+    "IN перевіряє належність до множини ідентифікаторів клієнтів, які мають запис про оплату.",
+    "SELECT u.user_id, u.first_name, u.last_name\nFROM `user` AS u\nWHERE u.user_id IN (\n    SELECT o.user_id\n    FROM `order` AS o\n    JOIN `transaction` AS t ON t.order_id = o.order_id\n)\nORDER BY u.user_id;"
+  ],
+  [
+    "Клієнти, які мають бронювання",
+    "Корельований EXISTS перевіряє наявність хоча б одного пов’язаного бронювання.",
+    "SELECT u.user_id, u.first_name, u.last_name\nFROM `user` AS u\nWHERE EXISTS (\n    SELECT 1 FROM reservation AS r\n    WHERE r.user_id = u.user_id\n)\nORDER BY u.user_id;"
+  ],
+  [
+    "Страви дорожчі хоча б за один напій",
+    "ANY: достатньо, щоб порівняння було істинним хоча б для однієї ціни підзапиту.",
+    "SELECT food_id, name, price\nFROM food\nWHERE price > ANY (SELECT price FROM drink)\nORDER BY price, food_id;"
+  ],
+  [
+    "Страви дорожчі за кожний напій",
+    "ALL: порівняння має виконуватися для всіх цін підзапиту.",
+    "SELECT food_id, name, price\nFROM food\nWHERE price > ALL (SELECT price FROM drink)\nORDER BY price, food_id;"
+  ],
+  [
+    "Замовлення без зареєстрованої оплати",
+    "NOT EXISTS повертає замовлення, для яких немає пов’язаного рядка transaction.",
+    "SELECT o.order_id, o.order_status\nFROM `order` AS o\nWHERE NOT EXISTS (\n    SELECT 1 FROM `transaction` AS t\n    WHERE t.order_id = o.order_id\n)\nORDER BY o.order_id;"
+  ]
+]

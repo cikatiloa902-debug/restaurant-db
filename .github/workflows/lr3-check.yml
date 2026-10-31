@@ -1,0 +1,43 @@
+name: LR3 MySQL 8.4
+on:
+  push:
+    paths:
+      - 'lr3/**'
+      - 'mysql/init/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/lr3-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lr3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the original LR2 database
+        run: |
+          cp .env.example .env
+          docker compose -p restaurant-lr3 up -d --wait
+      - name: Verify fresh LR3 data and queries
+        shell: bash
+        run: |
+          set -a
+          source .env
+          set +a
+          export MYSQL_CMD="docker compose -p restaurant-lr3 exec -T -e MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql mysql --protocol=TCP -h127.0.0.1 -uroot --default-character-set=utf8mb4"
+          for attempt in $(seq 1 60); do
+            if $MYSQL_CMD -e 'SELECT 1' >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          python3 lr3/Mazeina_KI251_verify_LR3.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mazeina_KI251_LR3_results
+          path: lr3/results/
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose -p restaurant-lr3 logs mysql
+      - name: Stop isolated lab instance
+        if: always()
+        run: docker compose -p restaurant-lr3 down
