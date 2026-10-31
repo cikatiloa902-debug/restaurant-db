@@ -9,6 +9,9 @@
 
 Перевірити:
 ```powershell
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = $OutputEncoding
+chcp 65001
 docker --version
 docker compose version
 ```
