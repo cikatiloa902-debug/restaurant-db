@@ -13,7 +13,7 @@ if (!(Get-Command docker -ErrorAction SilentlyContinue)) {
     $env:Path += ";$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin"
 }
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
-docker compose up -d --wait
+docker compose up -d --build --wait
 docker compose ps
 ```
 

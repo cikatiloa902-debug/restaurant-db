@@ -1,7 +1,6 @@
 name: restaurant-lr5
 
 x-mysql: &mysql
-  image: mysql:8.0
   environment:
     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Copy .env.example to .env}
     MYSQL_DATABASE: ${MYSQL_DATABASE:-restaurant_db}
@@ -15,10 +14,12 @@ x-health: &mysql-health
 services:
   primary:
     <<: *mysql
+    build:
+      context: .
+      target: primary
     ports:
       - "127.0.0.1:${PRIMARY_PORT:-3307}:3306"
     volumes:
-      - ./conf/primary.cnf:/etc/mysql/conf.d/primary.cnf:ro
       - ./db/init:/docker-entrypoint-initdb.d:ro
       - primary_data:/var/lib/mysql
     healthcheck:
@@ -29,10 +30,12 @@ services:
 
   replica:
     <<: *mysql
+    build:
+      context: .
+      target: replica
     ports:
       - "127.0.0.1:${REPLICA_PORT:-3308}:3306"
     volumes:
-      - ./conf/replica.cnf:/etc/mysql/conf.d/replica.cnf:ro
       - replica_data:/var/lib/mysql
     depends_on:
       primary:

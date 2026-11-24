@@ -23,7 +23,7 @@ jobs:
       - name: Start two MySQL servers
         run: |
           cp .env.example .env
-          docker compose up -d --wait
+          docker compose up -d --build --wait
           docker compose ps
       - name: Verify IDs GTID and initial restaurant data
         run: |
