@@ -1,0 +1,64 @@
+name: LR4 Docker and browser
+
+on:
+  push:
+    branches: [lab4]
+    paths:
+      - 'lr4/**'
+      - '.github/workflows/lr4-check.yml'
+      - '.github/scripts/lr4-browser.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Start PHP Apache and MySQL
+        working-directory: lr4
+        run: |
+          cp .env.example .env
+          docker compose up -d --build --wait
+          mkdir -p ../screens
+          docker compose ps | tee ../screens/docker-services.txt
+          docker compose exec -T web php -v | tee ../screens/php-version.txt
+          docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql --protocol=TCP -h127.0.0.1 -uroot -N -e "SELECT VERSION()"' |
+            tee ../screens/mysql-version.txt
+          for attempt in {1..12}; do
+            if curl --fail --silent --show-error --output /dev/null http://127.0.0.1:8080/; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Install Chromium and launch browser checks
+        env:
+          NODE_PATH: ${{ runner.temp }}/lr4-test/node_modules
+        run: |
+          npm install --prefix "$RUNNER_TEMP/lr4-test" playwright@1.59.0
+          "$NODE_PATH/.bin/playwright" install --with-deps chromium
+          node .github/scripts/lr4-browser.cjs | tee screens/browser-checks.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Mazeina_KI251_LR4_Docker
+          path: screens/
+          if-no-files-found: ignore
+      - name: Container logs on failure
+        if: failure()
+        working-directory: lr4
+        run: docker compose logs
+      - name: Stop containers
+        if: always()
+        working-directory: lr4
+        run: docker compose down
