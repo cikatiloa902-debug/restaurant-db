@@ -1,0 +1,15 @@
+# Налаштування основного сервера (primary)
+[mysqld]
+server-id                  = 1
+# --- бінарний журнал і GTID (потрібні для PITR та реплікації) ---
+log-bin                    = binlog
+binlog_expire_logs_seconds = 604800        # зберігати журнали 7 днів
+gtid_mode                  = ON
+enforce_gtid_consistency   = ON
+# --- журнал повільних запитів ---
+slow_query_log             = ON
+slow_query_log_file        = /var/lib/mysql/slow.log
+long_query_time            = 0.5           # секунд
+# --- загальний журнал: вмикається лише на час налагодження ---
+general_log                = OFF
+general_log_file           = /var/lib/mysql/general.log

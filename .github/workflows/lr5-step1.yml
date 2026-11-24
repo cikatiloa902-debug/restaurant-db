@@ -1,0 +1,46 @@
+name: LR5 MySQL stand
+
+on:
+  push:
+    branches: [lab5]
+    paths:
+      - 'lr5/**'
+      - '.github/workflows/lr5-step1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  mysql-stand:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    defaults:
+      run:
+        shell: bash
+        working-directory: lr5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start two MySQL servers
+        run: |
+          cp .env.example .env
+          docker compose up -d --wait
+          docker compose ps
+      - name: Verify IDs GTID and initial restaurant data
+        run: |
+          check() {
+            docker compose exec -T "$1" sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -BN -e "$1"' mysql "$2"
+          }
+          primary=$(check primary 'SELECT VERSION(), @@server_id, @@gtid_mode;')
+          replica=$(check replica 'SELECT VERSION(), @@server_id, @@gtid_mode;')
+          printf 'SERVICE\tVERSION\tSERVER_ID\tGTID\nprimary\t%s\nreplica\t%s\n' "$primary" "$replica"
+          [[ "$primary" == 8.0.*$'\t1\tON' ]]
+          [[ "$replica" == 8.0.*$'\t2\tON' ]]
+          rows=$(check primary 'SELECT COUNT(*) FROM restaurant_db.`order`;')
+          [[ "$rows" == 15 ]]
+          printf 'Primary orders: %s\n' "$rows"
+      - name: Print database logs if startup fails
+        if: failure()
+        run: docker compose logs --tail=50
+      - name: Stop services
+        if: always()
+        run: docker compose down

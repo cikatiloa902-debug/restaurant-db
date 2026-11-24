@@ -1,0 +1,10 @@
+# Налаштування репліки (replica)
+[mysqld]
+server-id                  = 2
+relay-log                  = relay
+log-bin                    = binlog
+gtid_mode                  = ON
+enforce_gtid_consistency   = ON
+report_host                = replica
+# read_only / super_read_only вмикаються командою SET PERSIST після початкового
+# завантаження даних (див. крок 6), а не тут: інакше не ініціалізується контейнер.
