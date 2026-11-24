@@ -31,7 +31,7 @@ try {
         http_response_code(405);
         $message = 'Цей метод для сторінки недоступний.';
     } elseif ($method === 'POST' && !validCsrf()) {
-        http_response_code(419);
+        header('HTTP/1.1 419 Page Expired', true, 419);
         $message = 'Форма застаріла. Відкрийте її знову та повторіть дію.';
     } elseif ($action === 'list') {
         $title = $entity['title'];
