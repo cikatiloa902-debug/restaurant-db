@@ -1,0 +1,23 @@
+CREATE ROLE IF NOT EXISTS 'app_rw', 'reporting_ro';
+GRANT SELECT, INSERT, UPDATE, DELETE ON restaurant_db.* TO 'app_rw';
+GRANT SELECT ON restaurant_db.* TO 'reporting_ro';
+
+CREATE USER IF NOT EXISTS 'app_user'@'%' IDENTIFIED BY '@APP_PASSWORD@';
+ALTER USER 'app_user'@'%' IDENTIFIED BY '@APP_PASSWORD@'
+    FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 1 ACCOUNT UNLOCK;
+GRANT 'app_rw' TO 'app_user'@'%';
+SET DEFAULT ROLE 'app_rw' TO 'app_user'@'%';
+
+CREATE USER IF NOT EXISTS 'report_user'@'%' IDENTIFIED BY '@REPORT_PASSWORD@';
+ALTER USER 'report_user'@'%' IDENTIFIED BY '@REPORT_PASSWORD@' PASSWORD EXPIRE INTERVAL 90 DAY;
+GRANT 'reporting_ro' TO 'report_user'@'%';
+SET DEFAULT ROLE 'reporting_ro' TO 'report_user'@'%';
+
+CREATE USER IF NOT EXISTS 'backup_user'@'localhost' IDENTIFIED BY '@BACKUP_PASSWORD@';
+ALTER USER 'backup_user'@'localhost' IDENTIFIED BY '@BACKUP_PASSWORD@';
+GRANT SELECT, SHOW VIEW, TRIGGER, EVENT ON restaurant_db.* TO 'backup_user'@'localhost';
+GRANT SHOW_ROUTINE, RELOAD, REPLICATION CLIENT ON *.* TO 'backup_user'@'localhost';
+
+CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY '@REPL_PASSWORD@';
+ALTER USER 'repl'@'%' IDENTIFIED BY '@REPL_PASSWORD@';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';

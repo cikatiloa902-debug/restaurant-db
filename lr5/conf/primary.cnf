@@ -3,6 +3,7 @@
 server-id                  = 1
 # --- бінарний журнал і GTID (потрібні для PITR та реплікації) ---
 log-bin                    = binlog
+binlog_format              = ROW
 binlog_expire_logs_seconds = 604800        # зберігати журнали 7 днів
 gtid_mode                  = ON
 enforce_gtid_consistency   = ON

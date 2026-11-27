@@ -1,12 +1,13 @@
 name: restaurant-lr5
 
 x-mysql: &mysql
+  restart: unless-stopped
   environment:
-    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Copy .env.example to .env}
-    MYSQL_DATABASE: ${MYSQL_DATABASE:-restaurant_db}
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run bash scripts/init_env.sh}
+    MYSQL_ROOT_HOST: localhost
 
-x-health: &mysql-health
-  interval: 4s
+x-health: &health
+  interval: 5s
   timeout: 4s
   start_period: 40s
   retries: 20
@@ -22,11 +23,15 @@ services:
     volumes:
       - ./db/init:/docker-entrypoint-initdb.d:ro
       - primary_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run bash scripts/init_env.sh}
+      MYSQL_ROOT_HOST: localhost
+      BACKUP_PASSWORD: ${BACKUP_PASSWORD:?Run bash scripts/init_env.sh}
     healthcheck:
-      <<: *mysql-health
+      <<: *health
       test:
         - CMD-SHELL
-        - MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql --protocol=TCP -h127.0.0.1 -uroot "$$MYSQL_DATABASE" -e 'SELECT COUNT(*) FROM chef_specialty' >/dev/null
+        - test "$$(cat /proc/1/comm)" = mysqld && MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql --protocol=SOCKET -uroot restaurant_db -e 'SELECT 1 FROM chef_specialty LIMIT 1' >/dev/null
 
   replica:
     <<: *mysql
@@ -41,10 +46,10 @@ services:
       primary:
         condition: service_healthy
     healthcheck:
-      <<: *mysql-health
+      <<: *health
       test:
         - CMD-SHELL
-        - MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql --protocol=TCP -h127.0.0.1 -uroot -e 'SELECT 1' >/dev/null
+        - test "$$(cat /proc/1/comm)" = mysqld && MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql --protocol=SOCKET -uroot -e 'SELECT 1' >/dev/null
 
 volumes:
   primary_data:
